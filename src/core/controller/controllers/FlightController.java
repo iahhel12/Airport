@@ -106,11 +106,11 @@ public class FlightController {
             return new Response("Departure date must be in the future", Status.BAD_REQUEST);
         }
 
-        if (hoursDurationsArrival < 0 || minutesDurationsArrival < 0) {
-            return new Response("Arrival duration must be positive", Status.BAD_REQUEST);
+        if (hoursDurationsArrival <= 0 && minutesDurationsArrival <= 0) {
+            return new Response("Arrival duration must be greater than 00:00", Status.BAD_REQUEST);
         }
-        if (!scaleLocation.equals("Location") && (hoursDurationsScale < 0 || minutesDurationsScale < 0)) {
-            return new Response("Scale duration must be positive", Status.BAD_REQUEST);
+        if (!scaleLocation.equals("Location") && (hoursDurationsScale <= 0 && minutesDurationsScale <= 0)) {
+            return new Response("The scale duration must be greater than 00:00", Status.BAD_REQUEST);
         }
 
         if (FlightStorage.getInstance().get(id) != null) {
@@ -138,7 +138,7 @@ public class FlightController {
         } else {
             newFlight = new Flight(id, plane, departure, scale, arrival, departureDate, hoursDurationsArrival, minutesDurationsArrival, hoursDurationsScale, minutesDurationsScale);
         }
-
+        newFlight.getPlane().addFlight(newFlight);
         flightStorage.add(newFlight);
 
         return new Response("Success: Flight with ID '" + id + "' has been created successfully.", Status.OK);
@@ -189,5 +189,40 @@ public class FlightController {
         } catch (Exception e) {
             return new Response("An internal error has occured", Status.INTERNAL_SERVER_ERROR, null);
         }
+    }
+
+    public static Response DelayFlight(String flightId, String hours, String minutes) {
+        try {
+            flightId = flightId.trim();
+            hours = hours.trim();
+            minutes = minutes.trim();
+            if (flightId.isEmpty() || flightId.equals("Flight")) {
+                return new Response("No flight has been selected", Status.BAD_REQUEST);
+            }
+
+            Flight flight = FlightStorage.getInstance().get(flightId);
+
+            if (flight == null) {
+                return new Response("Flight doesn't exist", Status.BAD_REQUEST);
+            }
+
+            if ((hours.isEmpty() || hours.equals("Hour")) && (minutes.isEmpty() || minutes.equals("Minute"))) {
+                return new Response("Invalid time", Status.BAD_REQUEST);
+            }
+            
+            int hour, minute;
+            try {
+                hour = Integer.parseInt(hours);
+                minute = Integer.parseInt(minutes);
+            } catch (NumberFormatException e) {
+                 return new Response("Invalid time", Status.BAD_REQUEST);
+            }
+
+            flight.delay(hour, minute);
+            return new Response("Flight delayed", Status.OK);
+        } catch (Exception e) {
+            return new Response("An internal error has occured", Status.INTERNAL_SERVER_ERROR);
+        }
+
     }
 }

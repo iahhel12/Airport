@@ -53,6 +53,8 @@ public class AirportFrame extends javax.swing.JFrame {
 
         updateBoxUsers((ArrayList<String>) PassengerController.loadUsers().getObject());
         updateFlights((ArrayList<String>) FlightController.loadFlights().getObject());
+        updatePlanes((ArrayList<String>) PlaneController.loadPlanes().getObject());
+        updateLocations((ArrayList<String>) LocationController.loadLocations().getObject());
     }
 
     private void blockPanels() {
@@ -1625,24 +1627,27 @@ public class AirportFrame extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, response.getMessage(), "WARNING " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
         } else {
             JOptionPane.showMessageDialog(null, response.getMessage(), "OK", JOptionPane.INFORMATION_MESSAGE);
-
+            AddFlightFieldFlight.setSelectedIndex(0);
         }
     }//GEN-LAST:event_AddFlightAddActionPerformed
 
     private void DelayDelayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DelayDelayActionPerformed
         // TODO add your handling code here:
         String flightId = DelayComboId.getItemAt(DelayComboId.getSelectedIndex());
-        int hours = Integer.parseInt(DelayComboHours.getItemAt(DelayComboHours.getSelectedIndex()));
-        int minutes = Integer.parseInt(DelayComboMinutes.getItemAt(DelayComboMinutes.getSelectedIndex()));
+        String hours = (DelayComboHours.getItemAt(DelayComboHours.getSelectedIndex()));
+        String minutes = (DelayComboMinutes.getItemAt(DelayComboMinutes.getSelectedIndex()));
 
-        Flight flight = null;
-        for (Flight f : this.flights) {
-            if (flightId.equals(f.getId())) {
-                flight = f;
-            }
+        Response response = FlightController.DelayFlight(flightId, hours, minutes);
+        if (response.getStatus() >= 500) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "ERROR " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
+        } else if (response.getStatus() >= 400) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "WARNING " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "OK", JOptionPane.INFORMATION_MESSAGE);
+            DelayComboId.setSelectedIndex(0);
+            DelayComboHours.setSelectedIndex(0);
+            DelayComboMinutes.setSelectedIndex(0);
         }
-
-        flight.delay(hours, minutes);
     }//GEN-LAST:event_DelayDelayActionPerformed
 
     private void ShowMyFlightsTableRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ShowMyFlightsTableRefreshActionPerformed
@@ -1713,7 +1718,7 @@ public class AirportFrame extends javax.swing.JFrame {
         // TODO add your handling code here:
         DefaultTableModel model = (DefaultTableModel) ShowPlanesTable.getModel();
         model.setRowCount(0);
-       Response response = PlaneController.getAllPlanes();
+        Response response = PlaneController.getAllPlanes();
 
         ArrayList<ArrayList<String>> planes = (ArrayList<ArrayList<String>>) response.getObject();
         if (response.getStatus() >= 500) {
@@ -1733,8 +1738,8 @@ public class AirportFrame extends javax.swing.JFrame {
         // TODO add your handling code here:
         DefaultTableModel model = (DefaultTableModel) ShowLocationsTable.getModel();
         model.setRowCount(0);
-      Response response = LocationController.getAllLocations();
-             ArrayList<ArrayList<String>> locations = (ArrayList<ArrayList<String>>) response.getObject();
+        Response response = LocationController.getAllLocations();
+        ArrayList<ArrayList<String>> locations = (ArrayList<ArrayList<String>>) response.getObject();
         if (response.getStatus() >= 500) {
             JOptionPane.showMessageDialog(null, response.getMessage(), "ERROR " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
         } else if (response.getStatus() >= 400) {
@@ -1919,5 +1924,19 @@ public class AirportFrame extends javax.swing.JFrame {
     private javax.swing.JRadioButton selectAdmin;
     private javax.swing.JRadioButton selectUser;
     // End of variables declaration//GEN-END:variables
+
+    private void updatePlanes(ArrayList<String> ids) {
+        for (String id : ids) {
+            this.FlightComboPlane.addItem(id);
+        }
+    }
+
+    private void updateLocations(ArrayList<String> ids) {
+        for (String id : ids) {
+            this.FlightComboDepartureLocation.addItem(id);
+            this.FlightComboArrivalLocation.addItem(id);
+            this.FlightComboScaleLocation.addItem(id);
+        }
+    }
 
 }

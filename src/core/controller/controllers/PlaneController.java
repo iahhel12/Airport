@@ -84,4 +84,12 @@ public class PlaneController {
         }
     }
 
+    public static Response loadPlanes() {
+          ArrayList<String> ids = new ArrayList<>();
+        for (Plane ps : PlaneStorage.getInstance().getArray()) {
+            ids.add(String.valueOf(ps.getId()));
+        }
+        return new Response("", Status.OK, ids);
+    }
+
 }

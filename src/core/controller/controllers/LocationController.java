@@ -89,4 +89,12 @@ public class LocationController {
         }
     }
 
+    public static Response loadLocations() {
+        ArrayList<String> ids = new ArrayList<>();
+        for (Location ps : LocationStorage.getInstance().getArray()) {
+            ids.add(String.valueOf(ps.getAirportId()));
+        }
+        return new Response("", Status.OK, ids);
+    }
+
 }
